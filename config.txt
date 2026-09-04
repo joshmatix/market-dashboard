@@ -1,1 +1,1 @@
-https://market-backend-hzuc.onrender.com/api/market-data
+https://market-backend-hzuc.onrender.com
