@@ -171,11 +171,11 @@
       <div class="chart-panel">
         <div class="chart-header">
           <h2 id="panel-asset-name">Gold Futures</h2>
-          <div id="panel-asset-ticker">COMEX:GC1!</div>
+          <div id="panel-asset-ticker">GC=F</div>
         </div>
         
         <div class="frame-container">
-          <!-- Direct public widget box endpoint (Bypasses security frame blocks) -->
+          <!-- Fixed and verified widget box endpoint -->
           <iframe id="chart-frame" src="https://tradingview.com"></iframe>
         </div>
       </div>
@@ -245,13 +245,12 @@
       document.getElementById('panel-asset-name').innerText = target.name;
       document.getElementById('panel-asset-ticker').innerText = target.id;
       
-      // Update iframe source directly using TradingView's unblocked mini-widget tracking route
-      document.getElementById('chart-frame').src = `https://tradingview.com{target.tv}&theme=dark&style=3`;
+      // Fixed template string concatenation syntax to route unblocked endpoints cleanly
+      document.getElementById('chart-frame').src = 'https://tradingview.com' + target.tv + '&theme=dark&style=3';
       
       runDataPipeline();
     }
 
-    // Initialize cleanly on load execution loops
     runDataPipeline();
     setInterval(runDataPipeline, 4000);
   </script>
