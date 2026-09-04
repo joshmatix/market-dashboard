@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Macro & Financial Market Dashboard</title>
+  <!-- Tailwind CSS CDN for styling -->
+  <script src="https://tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen p-6 font-sans">
+
+  <div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <header class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-slate-800 gap-4">
+      <div>
+        <h1 class="text-3xl font-bold tracking-tight text-white">Live Macro & Markets Dashboard</h1>
+        <p class="text-sm text-slate-400">Zero-backend, live streaming tickers & charts</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-950 text-emerald-400 border border-emerald-800">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> Live Streaming
+        </span>
+      </div>
+    </header>
+
+    <!-- Main Grid Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+      
+      <!-- Left Column: Live Single Assets Trackers (Takes 1 Col) -->
+      <div class="space-y-4 lg:col-span-1">
+        <h2 class="text-lg font-semibold text-slate-400 mb-2 flex items-center gap-2">
+          <span>📊</span> Core Market Tickers
+        </h2>
+        
+        <!-- Live Tickers Widget Container -->
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 overflow-hidden h-[630px]">
+          <!-- TradingView Market Overview Widget Begin -->
+          <div class="tradingview-widget-container h-full">
+            <div class="tradingview-widget-container__widget h-full"></div>
+            <script type="text/javascript" src="https://tradingview.com" async>
+            {
+              "colorTheme": "dark",
+              "dateRange": "12M",
+              "showChart": false,
+              "locale": "en",
+              "width": "100%",
+              "height": "100%",
+              "largeChartUrl": "",
+              "isTransparent": true,
+              "showSymbolLogo": true,
+              "showFloatingTooltip": false,
+              "tabs": [
+                {
+                  "title": "Assets & Rates",
+                  "symbols": [
+                    { "s": "COMEX:GC1!", "d": "Gold Futures" },
+                    { "s": "COMEX:HG1!", "d": "Copper Futures" },
+                    { "s": "BINANCE:BTCUSDT", "d": "Bitcoin (BTC)" },
+                    { "s": "COMEX:SI1!", "d": "Silver Futures" },
+                    { "s": "TVC:US10Y", "d": "10-Year Yield" },
+                    { "s": "TVC:US30Y", "d": "30-Year Yield" },
+                    { "s": "ECONOMICS:US10YMRY", "d": "US 10Y Real Rate" },
+                    { "s": "ECONOMICS:US10YBEI", "d": "10Y Inflation Breakeven" }
+                  ]
+                }
+              ]
+            }
+            </script>
+          </div>
+          <!-- TradingView Market Overview Widget End -->
+        </div>
+      </div>
+
+      <!-- Right Column: Interactive Multi-Chart Workspace (Takes 2 Cols) -->
+      <div class="lg:col-span-2 space-y-4">
+        <h2 class="text-lg font-semibold text-slate-400 mb-2 flex items-center gap-2">
+          <span>📈</span> Interactive Chart Analysis
+        </h2>
+
+        <!-- Interactive Advanced Chart Box -->
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 h-[630px] overflow-hidden">
+          <!-- TradingView Advanced Chart Widget Begin -->
+          <div class="tradingview-widget-container h-full" id="tv-chart-container">
+            <div class="tradingview-widget-container__widget h-full"></div>
+            <script type="text/javascript" src="https://tradingview.com" async>
+            {
+              "autosize": true,
+              "symbol": "COMEX:GC1!",
+              "interval": "D",
+              "timezone": "Etc/UTC",
+              "theme": "dark",
+              "style": "1",
+              "locale": "en",
+              "allow_symbol_change": true,
+              "calendar": false,
+              "support_host": "https://tradingview.com"
+            }
+            </script>
+          </div>
+          <!-- TradingView Advanced Chart Widget End -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom Section: Macro Economic Ticker Ribbon -->
+    <footer class="mt-8 border-t border-slate-800 pt-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-2 overflow-hidden">
+        <!-- TradingView Ticker Ribbon Widget Begin -->
+        <div class="tradingview-widget-container">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://tradingview.com" async>
+          {
+            "symbols": [
+              { "proName": "COMEX:GC1!", "title": "Gold" },
+              { "proName": "COMEX:HG1!", "title": "Copper" },
+              { "proName": "BINANCE:BTCUSDT", "title": "Bitcoin" },
+              { "proName": "TVC:US10Y", "title": "US10Y" },
+              { "proName": "ECONOMICS:US10YBEI", "title": "Inflation Expectation" }
+            ],
+            "isTransparent": true,
+            "showSymbolLogo": true,
+            "colorTheme": "dark",
+            "locale": "en"
+          }
+          </script>
+        </div>
+        <!-- TradingView Ticker Ribbon Widget End -->
+      </div>
+    </footer>
+  </div>
+
+</body>
+</html>
