@@ -3,287 +3,149 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Macro Market Workspace</title>
-  
+  <title>Real Production Macro Market Workspace</title>
   <style>
-    body {
-      background-color: #020617;
-      color: #f8fafc;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      padding: 24px;
-      margin: 0;
-    }
+    body { background-color: #020617; color: #f8fafc; font-family: -apple-system, sans-serif; padding: 24px; margin: 0; }
     .container { max-width: 1400px; margin: 0 auto; }
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-b: 1px solid #1e293b;
-      padding-bottom: 20px;
-      margin-bottom: 24px;
-    }
+    header { display: flex; justify-content: space-between; align-items: center; border-b: 1px solid #1e293b; padding-bottom: 20px; margin-bottom: 24px; }
     h1 { margin: 0; font-size: 26px; font-weight: 800; }
-    .status-badge {
-      background-color: #0f172a;
-      border: 1px solid #334155;
-      padding: 8px 16px;
-      border-radius: 8px;
-      font-size: 12px;
-      color: #94a3b8;
-    }
-    .workspace {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 24px;
-    }
-    @media (min-width: 1024px) {
-      .workspace { grid-template-columns: 1.2fr 1fr; }
-    }
+    .workspace { display: grid; grid-template-columns: 1fr; gap: 24px; }
+    @media (min-width: 1024px) { .workspace { grid-template-columns: 1.2fr 1fr; } }
     table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
-    th {
-      text-align: left;
-      padding: 12px 16px;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: #64748b;
-      font-weight: 700;
-    }
+    th { text-align: left; padding: 12px 16px; font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; }
     tr.macro-row { cursor: pointer; }
-    td {
-      padding: 16px;
-      font-size: 14px;
-      font-weight: 500;
-      background-color: #0f172a;
-    }
-    td:first-child {
-      border-top-left-radius: 10px;
-      border-bottom-left-radius: 10px;
-      font-weight: 700;
-      font-family: monospace;
-    }
-    td:last-child {
-      border-top-right-radius: 10px;
-      border-bottom-right-radius: 10px;
-      text-align: right;
-    }
-    
-    /* Green and Red Styling */
-    .row-positive td { background-color: rgba(6, 78, 59, 0.25); }
-    .row-positive .ticker-text { color: #34d399; }
-    .row-positive .market-price { color: #10b981; font-weight: 800; }
-
-    .row-negative td { background-color: rgba(153, 27, 27, 0.2); }
-    .row-negative .ticker-text { color: #f87171; }
-    .row-negative .market-price { color: #ef4444; font-weight: 800; }
-
+    td { padding: 16px; font-size: 14px; background-color: #0f172a; transition: all 0.2s ease; }
+    td:first-child { border-top-left-radius: 10px; border-bottom-left-radius: 10px; font-weight: 700; font-family: monospace; }
+    td:last-child { border-top-right-radius: 10px; border-bottom-right-radius: 10px; text-align: right; }
+    tr.macro-row:hover td { filter: brightness(1.2); }
     .active-selection td { box-shadow: inset 0 0 0 2px #38bdf8; }
-
-    /* Chart Panel */
-    .chart-panel {
-      background-color: #0f172a;
-      border: 1px solid #1e293b;
-      border-radius: 16px;
-      padding: 24px;
-      height: 520px;
-      box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
-    }
-    .chart-header { margin-bottom: 16px; }
-    .chart-header h2 { margin: 0; font-size: 22px; font-weight: 800; color: #fff; }
-    .chart-header div { font-size: 12px; color: #64748b; margin-top: 2px; font-weight: bold; }
-    
-    .canvas-container {
-      flex-grow: 1;
-      width: 100%;
-      background-color: #020617;
-      border: 1px solid #1e293b;
-      border-radius: 12px;
-      position: relative;
-    }
-    canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-    }
+    .row-positive td { background-color: rgba(6, 78, 59, 0.25); }
+    .row-negative td { background-color: rgba(153, 27, 27, 0.2); }
+    .chart-panel { background-color: #0f172a; border: 1px solid #1e293b; border-radius: 16px; padding: 24px; height: 520px; display: flex; flex-direction: column; }
+    .canvas-container { flex-grow: 1; width: 100%; background-color: #020617; border: 1px solid #1e293b; border-radius: 12px; position: relative; }
+    canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
   </style>
 </head>
 <body>
-
   <div class="container">
     <header>
       <div>
         <h1>Macro Market Workspace</h1>
-        <div style="color: #64748b; font-size: 13px; margin-top: 4px;">Fail-safe financial grid workspace</div>
+        <div style="color: #64748b; font-size: 13px; margin-top: 4px;">Genuine Live Yahoo Finance Python Engine Feed</div>
       </div>
-      <div class="status-badge">
-        System Sync: <span id="last-updated" style="font-family: monospace; color: #38bdf8;">Active</span>
-      </div>
+      <div id="status" style="font-family: monospace; color: #64748b; font-size: 12px;">Syncing server node...</div>
     </header>
 
     <div class="workspace">
-      <!-- Left Side Table Layout -->
       <div>
         <table>
           <thead>
-            <tr>
-              <th style="width: 20%;">Ticker</th>
-              <th style="width: 35%;">Asset Name</th>
-              <th style="width: 25%;">Value</th>
-              <th style="width: 20%; text-align: right;">Net Change</th>
-            </tr>
+            <tr><th>Ticker</th><th>Asset Name</th><th>Live Value</th><th style="text-align: right;">Net Change</th></tr>
           </thead>
           <tbody id="table-body">
-            <tr class="macro-row row-positive active-selection" id="row-GC-F" onclick="selectAsset('GC=F')">
-              <td class="ticker-text">GC=F</td>
-              <td style="color: #e2e8f0;">Gold Futures</td>
-              <td class="market-price">2,514.80</td>
-              <td style="color: #34d399; text-align: right;">+0.45%</td>
-            </tr>
-            <tr class="macro-row row-negative" id="row-HG-F" onclick="selectAsset('HG=F')">
-              <td class="ticker-text">HG=F</td>
-              <td style="color: #e2e8f0;">Copper Futures</td>
-              <td class="market-price">4.21</td>
-              <td style="color: #f87171; text-align: right;">-1.12%</td>
-            </tr>
-            <tr class="macro-row row-positive" id="row-BTC-USD" onclick="selectAsset('BTC-USD')">
-              <td class="ticker-text">BTC-USD</td>
-              <td style="color: #e2e8f0;">Bitcoin Spot</td>
-              <td class="market-price">79,738.00</td>
-              <td style="color: #34d399; text-align: right;">+2.40%</td>
-            </tr>
-            <tr class="macro-row row-positive" id="row-SI-F" onclick="selectAsset('SI=F')">
-              <td class="ticker-text">SI=F</td>
-              <td style="color: #e2e8f0;">Silver Futures</td>
-              <td class="market-price">28.85</td>
-              <td style="color: #34d399; text-align: right;">+0.85%</td>
-            </tr>
-            <tr class="macro-row row-negative" id="row-TNX" onclick="selectAsset('^TNX')">
-              <td class="ticker-text">^TNX</td>
-              <td style="color: #e2e8f0;">10-Year Yield</td>
-              <td class="market-price">4.760%</td>
-              <td style="color: #f87171; text-align: right;">-0.32%</td>
-            </tr>
-            <tr class="macro-row row-positive" id="row-TYX" onclick="selectAsset('^TYX')">
-              <td class="ticker-text">^TYX</td>
-              <td style="color: #e2e8f0;">30-Year Yield</td>
-              <td class="market-price">5.240%</td>
-              <td style="color: #34d399; text-align: right;">+0.15%</td>
-            </tr>
-            <tr class="macro-row row-negative" id="row-TIP" onclick="selectAsset('TIP')">
-              <td class="ticker-text">TIP</td>
-              <td style="color: #e2e8f0;">Real Rates (TIP)</td>
-              <td class="market-price">106.80</td>
-              <td style="color: #f87171; text-align: right;">-0.45%</td>
-            </tr>
-            <tr class="macro-row row-positive" id="row-RINF" onclick="selectAsset('RINF')">
-              <td class="ticker-text">RINF</td>
-              <td style="color: #e2e8f0;">Inflation Proxy</td>
-              <td class="market-price">31.50</td>
-              <td style="color: #34d399; text-align: right;">+0.22%</td>
-            </tr>
+            <!-- Loaded safely via the live Python backend array streams -->
           </tbody>
         </table>
       </div>
-
-      <!-- Right Side Chart Box -->
       <div class="chart-panel">
-        <div class="chart-header">
-          <h2 id="panel-asset-name">Gold Futures</h2>
-          <div id="panel-asset-ticker">GC=F</div>
+        <div style="margin-bottom: 16px;">
+          <h2 id="panel-asset-name" style="margin:0; font-size:22px; color:#fff;">Select Asset</h2>
+          <div id="panel-asset-ticker" style="font-size:12px; color:#64748b; font-weight:bold; margin-top:2px;">TICKER</div>
         </div>
-        <div class="canvas-container">
-          <canvas id="marketCanvas"></canvas>
-        </div>
+        <div class="canvas-container"><canvas id="marketCanvas"></canvas></div>
       </div>
-
     </div>
   </div>
 
   <script>
-    const ASSETS = {
-      "GC=F": { name: "Gold Futures", history: [2510, 2512, 2511, 2515, 2513, 2514, 2516, 2514.80] },
-      "HG=F": { name: "Copper Futures", history: [4.25, 4.24, 4.23, 4.22, 4.20, 4.21] },
-      "BTC-USD": { name: "Bitcoin Spot", history: [78100, 79200, 78900, 79500, 79738] },
-      "SI=F": { name: "Silver Futures", history: [28.5, 28.7, 28.6, 28.9, 28.85] },
-      "^TNX": { name: "10-Year Yield", history: [4.80, 4.78, 4.77, 4.75, 4.76] },
-      "^TYX": { name: "30-Year Yield", history: [5.20, 5.22, 5.21, 5.23, 5.24] },
-      "TIP": { name: "Real Rates (TIP)", history: [107.1, 106.9, 107.0, 106.8] },
-      "RINF": { name: "Inflation Proxy", history: [31.2, 31.4, 31.3, 31.5] }
-    };
-
+    // Configuration Array mapping order structure cleanly
+    const ASSET_LIST = ["GC=F", "HG=F", "BTC-USD", "SI=F", "^TNX", "^TYX", "TIP", "RINF"];
+    let BACKEND_URL = "https://market-backend-hzuc.onrender.com/" // "YOUR_RENDER_URL_HERE"; // Paste your Render link here!
+    
     let selectedTicker = "GC=F";
+    let globalMarketData = null;
 
-    function selectAsset(id) {
-      selectedTicker = id;
-      const asset = ASSETS[id];
-      if (!asset) return;
-
-      document.getElementById('panel-asset-name').innerText = asset.name;
-      document.getElementById('panel-asset-ticker').innerText = id;
-
-      document.querySelectorAll('.macro-row').forEach(row => {
-        row.classList.remove('active-selection');
-      });
-      
-      const safeId = id.replace('^', '').replace('=', '-');
-      const targetRow = document.getElementById('row-' + safeId);
-      if (targetRow) targetRow.classList.add('active-selection');
-
-      renderChart();
-    }
-
-    function renderChart() {
+    async function fetchProductionFeeds() {
       try {
-        const canvas = document.getElementById('marketCanvas');
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
+        const response = await fetch(`${BACKEND_URL}/api/market-data`);
+        if (!response.ok) throw new Error("Backend synchronization error.");
         
-        const width = canvas.offsetWidth || 400;
-        const height = canvas.offsetHeight || 300;
-        canvas.width = width;
-        canvas.height = height;
-
-        ctx.clearRect(0, 0, width, height);
-        
-        const history = ASSETS[selectedTicker].history;
-        const min = Math.min(...history);
-        const max = Math.max(...history);
-        const range = max - min || 1;
-
-        // Grid Lines
-        ctx.strokeStyle = '#1e293b';
-        ctx.lineWidth = 1;
-        for (let i = 1; i < 4; i++) {
-          let yLine = (height / 4) * i;
-          ctx.beginPath();
-          ctx.moveTo(0, yLine);
-          ctx.lineTo(width, yLine);
-          ctx.stroke();
-        }
-
-        // Draw Line Chart
-        ctx.beginPath();
-        history.forEach((val, i) => {
-          const x = (width / (history.length - 1)) * i;
-          const y = height - 30 - ((val - min) / range) * (height - 60);
-          if (i === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        });
-
-        ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 3;
-        ctx.stroke();
+        globalMarketData = await response.json();
+        renderTableUI();
+        renderCustomChart();
+        document.getElementById('status').innerText = `Refreshed: ${new Date().toLocaleTimeString()}`;
       } catch (err) {
-        console.error("Chart error:", err);
+        document.getElementById('status').innerText = "Reconnecting to live backend engine...";
       }
     }
 
-    window.addEventListener('load', renderChart);
-    window.addEventListener('resize', renderChart);
+    function renderTableUI() {
+      const tbody = document.getElementById('table-body');
+      if (!tbody || !globalMarketData) return;
+
+      tbody.innerHTML = ASSET_LIST.map(ticker => {
+        const data = globalMarketData[ticker];
+        if (!data) return '';
+        
+        const isUp = data.pct >= 0;
+        const plusSign = isUp ? '+' : '';
+        const isYield = ticker.startsWith('^');
+        
+        const printPrice = isYield ? data.price.toFixed(3) + "%" : data.price.toLocaleString(undefined, {minimumFractionDigits: 2});
+
+        return `
+          <tr class="macro-row ${isUp ? 'row-positive' : 'row-negative'} ${ticker === selectedTicker ? 'active-selection' : ''}" onclick="selectAsset('${ticker}')">
+            <td style="color: ${isUp ? '#34d399':'#f87171'}">${ticker}</td>
+            <td style="color: #e2e8f0;">${data.name}</td>
+            <td style="color: ${isUp ? '#10b981':'#ef4444'}; font-weight:800;">${printPrice}</td>
+            <td style="color: ${isUp ? '#34d399':'#f87171'}">${plusSign}${data.pct.toFixed(2)}%</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function selectAsset(ticker) {
+      selectedTicker = ticker;
+      if (globalMarketData && globalMarketData[ticker]) {
+        document.getElementById('panel-asset-name').innerText = globalMarketData[ticker].name;
+        document.getElementById('panel-asset-ticker').innerText = ticker;
+      }
+      renderTableUI();
+      renderCustomChart();
+    }
+
+    function renderCustomChart() {
+      const canvas = document.getElementById('marketCanvas');
+      if (!canvas || !globalMarketData || !globalMarketData[selectedTicker]) return;
+      const ctx = canvas.getContext('2d');
+      
+      const width = canvas.offsetWidth; const height = canvas.offsetHeight;
+      canvas.width = width; canvas.height = height;
+      ctx.clearRect(0, 0, width, height);
+
+      const history = globalMarketData[selectedTicker].history;
+      const min = Math.min(...history); const max = Math.max(...history); const range = max - min || 1;
+
+      ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 1;
+      for (let i = 1; i < 4; i++) {
+        let yLine = (height / 4) * i;
+        ctx.beginPath(); ctx.moveTo(0, yLine); ctx.lineTo(width, yLine); ctx.stroke();
+      }
+
+      ctx.beginPath();
+      history.forEach((val, i) => {
+        const x = (width / (history.length - 1)) * i;
+        const y = height - 30 - ((val - min) / range) * (height - 60);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+
+      ctx.strokeStyle = globalMarketData[selectedTicker].pct >= 0 ? '#10b981' : '#ef4444';
+      ctx.lineWidth = 3; ctx.stroke();
+    }
+
+    fetchProductionFeeds();
+    setInterval(fetchProductionFeeds, 10000);
+    window.addEventListener('resize', renderCustomChart);
   </script>
 </body>
 </html>
