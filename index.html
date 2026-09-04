@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Live Macro Market Stream & Charting Panel</title>
+  <title>Live Macro Market Stream & Tracking Workspace</title>
   
   <style>
     body {
@@ -39,7 +39,7 @@
       color: #94a3b8;
     }
     
-    /* Grid Workspace Split */
+    /* Workspace Dual-Split Grid Layout */
     .workspace {
       display: grid;
       grid-template-columns: 1fr;
@@ -51,7 +51,7 @@
       }
     }
 
-    /* Table Component */
+    /* Table Formatting */
     table {
       width: 100%;
       border-collapse: separate;
@@ -87,13 +87,13 @@
       border-bottom-right-radius: 10px;
     }
     tr.macro-row:hover td {
-      filter: brightness(1.3);
+      filter: brightness(1.2);
     }
     tr.active-selection td {
       box-shadow: inset 0 0 0 2px #38bdf8;
     }
 
-    /* Row Color Variants */
+    /* Green / Red Row states */
     .row-positive td { background-color: rgba(6, 78, 59, 0.25); border-top: 1px solid rgba(16, 185, 129, 0.2); border-bottom: 1px solid rgba(16, 185, 129, 0.2); }
     .row-positive .ticker-text { color: #34d399; }
     .row-positive .market-price { color: #10b981; font-weight: 800; }
@@ -104,64 +104,35 @@
     .row-negative .market-price { color: #ef4444; font-weight: 800; }
     .row-negative .market-change { color: #f87171; font-weight: 700; }
 
-    /* Chart Components */
+    /* Chart Display Windows */
     .chart-panel {
       background-color: #0f172a;
       border: 1px solid #1e293b;
       border-radius: 16px;
       padding: 24px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
       height: 520px;
       box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
     }
     .chart-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
       margin-bottom: 16px;
     }
-    .chart-title-box h2 { margin: 0; font-size: 22px; font-weight: 800; color: #fff; }
-    .chart-title-box div { font-size: 12px; color: #64748b; margin-top: 2px; font-weight: bold; }
+    .chart-header h2 { margin: 0; font-size: 22px; font-weight: 800; color: #fff; }
+    .chart-header div { font-size: 12px; color: #64748b; margin-top: 2px; font-weight: bold; }
     
-    .timeline-bar {
-      display: flex;
-      gap: 6px;
-      background-color: #020617;
-      padding: 4px;
-      border-radius: 8px;
-      border: 1px solid #1e293b;
-    }
-    .time-btn {
-      background: none;
-      border: none;
-      color: #64748b;
-      padding: 6px 12px;
-      font-size: 11px;
-      font-weight: 700;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .time-btn:hover { color: #f8fafc; }
-    .time-btn.active { background-color: #1e293b; color: #38bdf8; }
-
-    .canvas-container {
-      position: relative;
+    .frame-container {
       flex-grow: 1;
       width: 100%;
-      height: 360px; /* Explicit height backup */
       background-color: #020617;
       border: 1px solid #1e293b;
       border-radius: 12px;
       overflow: hidden;
-      margin-top: 10px;
     }
-    canvas {
-      display: block;
+    iframe {
       width: 100%;
       height: 100%;
+      border: none;
     }
   </style>
 </head>
@@ -171,15 +142,15 @@
     <header>
       <div>
         <h1>Macro Market Workspace</h1>
-        <div style="color: #64748b; font-size: 13px; margin-top: 4px;">Click an asset row below to isolate interactive line trends</div>
+        <div style="color: #64748b; font-size: 13px; margin-top: 4px;">Click an asset row below to switch the live chart window</div>
       </div>
       <div class="status-badge">
-        Network Feed: <span id="last-updated" style="font-family: monospace; color: #f1f5f9;">Loading...</span>
+        Internal Loop Sync: <span id="last-updated" style="font-family: monospace; color: #f1f5f9;">Loading...</span>
       </div>
     </header>
 
     <div class="workspace">
-      <!-- Left Matrix Table -->
+      <!-- Left side: The Structured Color Table -->
       <div>
         <table>
           <thead>
@@ -191,28 +162,21 @@
             </tr>
           </thead>
           <tbody id="table-body">
-            <!-- Populated via script -->
+            <!-- Rendered by client loop -->
           </tbody>
         </table>
       </div>
 
-      <!-- Right Visual Chart Window -->
+      <!-- Right side: Isolated Official Unblocked Mini Widget Chart -->
       <div class="chart-panel">
         <div class="chart-header">
-          <div class="chart-title-box">
-            <h2 id="panel-asset-name">Gold Futures</h2>
-            <div id="panel-asset-ticker">GC=F</div>
-          </div>
-          <div class="timeline-bar">
-            <button class="time-btn active" onclick="changeTimeline('1D', this)">1D</button>
-            <button class="time-btn" onclick="changeTimeline('5D', this)">5D</button>
-            <button class="time-btn" onclick="changeTimeline('1M', this)">1M</button>
-            <button class="time-btn" onclick="changeTimeline('1Y', this)">1Y</button>
-          </div>
+          <h2 id="panel-asset-name">Gold Futures</h2>
+          <div id="panel-asset-ticker">COMEX:GC1!</div>
         </div>
         
-        <div class="canvas-container">
-          <canvas id="marketCanvas"></canvas>
+        <div class="frame-container">
+          <!-- Direct public widget box endpoint (Bypasses security frame blocks) -->
+          <iframe id="chart-frame" src="https://tradingview.com"></iframe>
         </div>
       </div>
 
@@ -221,97 +185,75 @@
 
   <script>
     const ASSETS = [
-      { id: "GC=F", name: "Gold Futures", basePrice: 2514.80, unit: "oz" },
-      { id: "HG=F", name: "Copper Futures", basePrice: 4.21, unit: "lb" },
-      { id: "BTC-USD", name: "Bitcoin Spot", basePrice: 64200.00, unit: "coin" },
-      { id: "SI=F", name: "Silver Futures", basePrice: 28.85, unit: "oz" },
-      { id: "^TNX", name: "10-Year Yield", basePrice: 3.845, unit: "%" },
-      { id: "^TYX", name: "30-Year Yield", basePrice: 4.120, unit: "%" },
-      { id: "TIP", name: "Real Rates (TIP)", basePrice: 108.35, unit: "nav" },
-      { id: "RINF", name: "Inflation Proxy", basePrice: 32.18, unit: "nav" }
+      { id: "GC=F", tv: "COMEX:GC1!", name: "Gold Futures", base: 2514.80, unit: "oz" },
+      { id: "HG=F", tv: "COMEX:HG1!", name: "Copper Futures", base: 4.21, unit: "lb" },
+      { id: "BTC-USD", tv: "BINANCE:BTCUSDT", name: "Bitcoin Spot", base: 64200.00, unit: "coin" },
+      { id: "SI=F", tv: "COMEX:SI1!", name: "Silver Futures", base: 28.85, unit: "oz" },
+      { id: "^TNX", tv: "TVC:US10Y", name: "10-Year Yield", base: 3.845, unit: "%" },
+      { id: "^TYX", tv: "TVC:US30Y", name: "30-Year Yield", base: 4.120, unit: "%" },
+      { id: "TIP", tv: "AMEX:TIP", name: "Real Rates (TIP)", base: 108.35, unit: "nav" },
+      { id: "RINF", tv: "AMEX:RINF", name: "Inflation Proxy", base: 32.18, unit: "nav" }
     ];
 
     let selectedTicker = "GC=F";
-    let selectedTimeframe = "1D";
-    let runtimeCache = {};
+    let pricesState = {};
 
-    // Build independent runtime blocks
     ASSETS.forEach(a => {
-      runtimeCache[a.id] = {
-        currentPrice: a.basePrice,
-        tickMove: 0,
-        pctChange: 0,
-        historical: Array.from({length: 40}, () => a.basePrice * (1 + (Math.random() - 0.5) * 0.02))
-      };
+      pricesState[a.id] = { price: a.base, change: 0, pct: 0 };
     });
 
-    async function updateMarketFeeds() {
+    function runDataPipeline() {
       const tbody = document.getElementById('table-body');
       if (!tbody) return;
-      let liveBtc = null;
-
-      try {
-        const res = await fetch('https://coingecko.com');
-        if (res.ok) {
-          const cryptoJson = await res.json();
-          liveBtc = cryptoJson.bitcoin?.usd;
-        }
-      } catch (e) {
-        console.warn("Using baseline configuration data streams.");
-      }
 
       tbody.innerHTML = ASSETS.map(asset => {
-        const cache = runtimeCache[asset.id];
+        const state = pricesState[asset.id];
         
-        cache.tickMove = (Math.random() - 0.5) * (asset.basePrice * 0.001);
-        cache.currentPrice = asset.basePrice + cache.tickMove;
-        
-        if (asset.id === "BTC-USD" && liveBtc) {
-          cache.currentPrice = liveBtc;
-          cache.tickMove = (liveBtc - asset.basePrice);
-        }
+        const tickMove = (Math.random() - 0.5) * (asset.base * 0.001);
+        state.price = asset.base + tickMove;
+        state.pct = ((tickMove / asset.base) * 100) + (Math.random() * 0.4 - 0.2);
 
-        cache.pctChange = ((cache.tickMove / asset.basePrice) * 100) + (Math.random() * 0.4 - 0.2);
-        
-        cache.historical.push(cache.currentPrice);
-        if (cache.historical.length > 50) cache.historical.shift();
-
-        const isUp = cache.pctChange >= 0;
+        const isUp = state.pct >= 0;
         const rowClass = isUp ? 'row-positive' : 'row-negative';
         const activeClass = asset.id === selectedTicker ? 'active-selection' : '';
         const plusSign = isUp ? '+' : '';
 
-        const printValue = asset.unit === "%" 
-          ? cache.currentPrice.toFixed(3) + "%" 
-          : cache.currentPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        const printPrice = asset.unit === "%" 
+          ? state.price.toFixed(3) + "%" 
+          : state.price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
 
         return `
           <tr class="macro-row ${rowClass} ${activeClass}" onclick="selectAsset('${asset.id}')">
             <td class="ticker-text">${asset.id}</td>
             <td style="color: #e2e8f0;">${asset.name}</td>
-            <td class="market-price">${printValue}</td>
+            <td class="market-price">${printPrice}</td>
             <td class="market-change" style="text-align: right;">
-              ${plusSign}${cache.pctChange.toFixed(2)}%
+              ${plusSign}${state.pct.toFixed(2)}%
             </td>
           </tr>
         `;
       }).join('');
 
       document.getElementById('last-updated').innerText = new Date().toLocaleTimeString();
-      renderActiveChart();
     }
 
-    function selectAsset(ticker) {
-      selectedTicker = ticker;
-      const targetAsset = ASSETS.find(a => a.id === ticker);
-      if(targetAsset) {
-        document.getElementById('panel-asset-name').innerText = targetAsset.name;
-        document.getElementById('panel-asset-ticker').innerText = targetAsset.id;
-      }
+    function selectAsset(id) {
+      selectedTicker = id;
+      const target = ASSETS.find(a => a.id === id);
+      if (!target) return;
+
+      document.getElementById('panel-asset-name').innerText = target.name;
+      document.getElementById('panel-asset-ticker').innerText = target.id;
       
-      const rows = document.querySelectorAll('.macro-row');
-      rows.forEach((row, idx) => {
-        if (ASSETS[idx] && ASSETS[idx].id === ticker) row.classList.add('active-selection');
-        else row.classList.remove('active-selection');
-      });
+      // Update iframe source directly using TradingView's unblocked mini-widget tracking route
+      document.getElementById('chart-frame').src = `https://tradingview.com{target.tv}&theme=dark&style=3`;
       
+      runDataPipeline();
+    }
+
+    // Initialize cleanly on load execution loops
+    runDataPipeline();
+    setInterval(runDataPipeline, 4000);
+  </script>
+</body>
+</html>
