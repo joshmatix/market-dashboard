@@ -33,7 +33,7 @@
         <h1>Macro Market Workspace</h1>
         <div style="color: #64748b; font-size: 13px; margin-top: 4px;">Genuine Live Yahoo Finance Python Engine Feed</div>
       </div>
-      <div id="status" style="font-family: monospace; color: #64748b; font-size: 12px;">Syncing server node...</div>
+      <div id="status" style="font-family: monospace; color: #38bdf8; font-size: 12px;">Syncing server node...</div>
     </header>
 
     <div class="workspace">
@@ -43,14 +43,14 @@
             <tr><th>Ticker</th><th>Asset Name</th><th>Live Value</th><th style="text-align: right;">Net Change</th></tr>
           </thead>
           <tbody id="table-body">
-            <!-- Table yields inject smoothly via Python stream arrays -->
+            <!-- Table row metrics populate dynamically here -->
           </tbody>
         </table>
       </div>
       <div class="chart-panel">
         <div style="margin-bottom: 16px;">
-          <h2 id="panel-asset-name" style="margin:0; font-size:22px; color:#fff;">Select Asset</h2>
-          <div id="panel-asset-ticker" style="font-size:12px; color:#64748b; font-weight:bold; margin-top:2px;">TICKER</div>
+          <h2 id="panel-asset-name" style="margin:0; font-size:22px; color:#fff;">Gold Futures</h2>
+          <div id="panel-asset-ticker" style="font-size:12px; color:#64748b; font-weight:bold; margin-top:2px;">GC=F</div>
         </div>
         <div class="canvas-container"><canvas id="marketCanvas"></canvas></div>
       </div>
@@ -60,38 +60,40 @@
   <script>
     const ASSET_LIST = ["GC=F", "HG=F", "BTC-USD", "SI=F", "^TNX", "^TYX", "TIP", "RINF"];
     
-    // REPLACE THIS WITH YOUR RENDER URL ONCE DEPLOYED!
-    let BACKEND_URL = "https://market-backend-hzuc.onrender.com/api/market-data"; 
+    // PASTE YOUR RAW RENDER URL IN THE QUOTES BELOW (Do not include /api/market-data here)
+    let BACKEND_URL = "YOUR_RENDER_URL_HERE"; 
     
     let selectedTicker = "GC=F";
     let globalMarketData = null;
 
     async function fetchProductionFeeds() {
-      // If the Render URL hasn't been updated yet, pull static fail-safe values so the page is never blank
-      if (BACKEND_URL.includes("YOUR_RENDER_URL_HERE")) {
+      if (BACKEND_URL.includes("YOUR_RENDER_URL_HERE") || BACKEND_URL === "") {
         useLocalDataFallback();
         return;
       }
 
       try {
         const response = await fetch(`${BACKEND_URL}/api/market-data`);
-        if (!response.ok) throw new Error("Backend synchronization error.");
+        if (!response.ok) throw new Error("Sync failure.");
         
         globalMarketData = await response.json();
         renderTableUI();
         renderCustomChart();
-        document.getElementById('status').innerText = `Refreshed: ${new Date().toLocaleTimeString()}`;
+        document.getElementById('status').style.color = '#10b981';
+        document.getElementById('status').innerText = `Live Feed Refreshed: ${new Date().toLocaleTimeString()}`;
       } catch (err) {
-        document.getElementById('status').innerText = "Reconnecting to live backend engine...";
+        document.getElementById('status').style.color = '#f87171';
+        document.getElementById('status').innerText = "Waking up free server tier, please wait...";
         useLocalDataFallback();
       }
     }
 
+    // Cleaned syntax to ensure the script interpreter never halts or crashes
     function useLocalDataFallback() {
       globalMarketData = {
         "GC=F": { name: "Gold Futures", price: 2514.80, pct: 0.45, history: [2510, 2512, 2511, 2515, 2513, 2514, 2516, 2514.80] },
         "HG=F": { name: "Copper Futures", price: 4.21, pct: -1.12, history: [4.25, 4.24, 4.23, 4.22, 4.20, 4.21] },
-        "BTC-USD": { name: "Bitcoin Spot", price: 79738.00, pct: 2.40, history: [78200, 78900, 79100, 79500, 79738] },
+        "BTC-USD": { name: "Bitcoin Spot", price: 79738.00, pct: 2.40, history: [79500, 79600, 79738] },
         "SI=F": { name: "Silver Futures", price: 28.85, pct: 0.85, history: [28.5, 28.7, 28.6, 28.9, 28.85] },
         "^TNX": { name: "10-Year Yield", price: 4.76, pct: -0.32, history: [4.80, 4.78, 4.77, 4.75, 4.76] },
         "^TYX": { name: "30-Year Yield", price: 5.24, pct: 0.15, history: [5.20, 5.22, 5.21, 5.23, 5.24] },
@@ -148,6 +150,8 @@
       ctx.clearRect(0, 0, width, height);
 
       const history = globalMarketData[selectedTicker].history;
+      if (!history || history.length === 0) return;
+      
       const min = Math.min(...history); const max = Math.max(...history); const range = max - min || 1;
 
       ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 1;
@@ -167,10 +171,9 @@
       ctx.lineWidth = 3; ctx.stroke();
     }
 
-    // Initialize layout stack cleanly on page loading loops
     window.addEventListener('DOMContentLoaded', () => {
       fetchProductionFeeds();
-      setInterval(fetchProductionFeeds, 12000);
+      setInterval(fetchProductionFeeds, 15000);
     });
     window.addEventListener('resize', renderCustomChart);
   </script>
