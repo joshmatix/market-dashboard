@@ -13,51 +13,98 @@
     <header class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-slate-800 gap-4">
       <div>
         <h1 class="text-3xl font-bold tracking-tight text-white">Live Macro & Markets Dashboard</h1>
-        <p class="text-sm text-slate-400">Pure HTML, live streaming trackers & charts</p>
+        <p class="text-sm text-slate-400">Direct server-to-client financial stream (No TradingView Blocks)</p>
       </div>
       <div class="flex items-center gap-3">
         <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-950 text-emerald-400 border border-emerald-800">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> Live Streaming
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Auto-Updating
         </span>
+        <span id="last-updated" class="text-xs text-slate-500">Loading feeds...</span>
       </div>
     </header>
 
-    <!-- Main Grid Layout -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-      
-      <!-- Left Column: Core Assets Watchlist -->
-      <div class="space-y-4 lg:col-span-1">
-        <h2 class="text-lg font-semibold text-slate-400 mb-2 flex items-center gap-2">
-          <span>📊</span> Core Market Tickers
-        </h2>
-        
-        <!-- Clean, scriptless iframe watchlist -->
-        <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-lg" style="height: 600px;">
-          <iframe 
-            src="https://tradingview.com"
-            style="width: 100%; height: 100%; border: none;" 
-            scrolling="no">
-          </iframe>
-        </div>
-      </div>
-
-      <!-- Right Column: Interactive Chart Analysis -->
-      <div class="lg:col-span-2 space-y-4">
-        <h2 class="text-lg font-semibold text-slate-400 mb-2 flex items-center gap-2">
-          <span>📈</span> Interactive Chart Analysis
-        </h2>
-
-        <!-- Clean, scriptless iframe chart -->
-        <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-lg" style="height: 600px;">
-          <iframe 
-            src="https://tradingview.com" 
-            style="width: 100%; height: 100%; border: none;">
-          </iframe>
-        </div>
-      </div>
-
+    <!-- Cards Grid Display -->
+    <div id="dashboard-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+      <!-- Skeletons render here before script initializes -->
+      <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 animate-pulse h-28"></div>
+      <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 animate-pulse h-28"></div>
+      <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 animate-pulse h-28"></div>
+      <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 animate-pulse h-28"></div>
     </div>
   </div>
 
+  <script>
+    // Exact requested mapping list
+    const ASSETS = [
+      { id: "GC=F", name: "Gold Futures" },
+      { id: "HG=F", name: "Copper Futures" },
+      { id: "BTC-USD", name: "Bitcoin" },
+      { id: "SI=F", name: "Silver Futures" },
+      { id: "^TNX", name: "10-Year Yield" },
+      { id: "^TYX", name: "30-Year Yield" },
+      { id: "TIP", name: "Real Rates (TIP)" },
+      { id: "RINF", name: "Inflation Proxy" }
+    ];
+
+    async function fetchMarketData() {
+      const grid = document.getElementById('dashboard-grid');
+      const symbols = ASSETS.map(a => encodeURIComponent(a.id)).join(',');
+      
+      // Public Open-Access API Engine parsing financial arrays directly
+      const queryUrl = `https://yahoo.com{symbols}`;
+      const proxyUrl = `https://allorigins.win{encodeURIComponent(queryUrl)}`;
+
+      try {
+        const response = await fetch(proxyUrl);
+        if (!response.ok) throw new Error("Network latency detected.");
+        
+        const wrapper = await response.json();
+        const data = JSON.parse(wrapper.contents);
+        const quotes = data.quoteResponse.result;
+
+        grid.innerHTML = ASSETS.map(asset => {
+          const quote = quotes.find(q => q.symbol === asset.id) || {};
+          const price = quote.regularMarketPrice ?? 0;
+          const change = quote.regularMarketChange ?? 0;
+          const pct = quote.regularMarketChangePercent ?? 0;
+          
+          const isUp = change >= 0;
+          const textClass = isUp ? 'text-emerald-400' : 'text-rose-400';
+          const badgeClass = isUp ? 'bg-emerald-950 text-emerald-300 border-emerald-800' : 'bg-rose-950 text-rose-300 border-rose-800';
+          const sign = isUp ? '+' : '';
+
+          // Specific formatting logic for Treasury Index values
+          const displayPrice = asset.id.startsWith('^') ? (price).toFixed(3) + "%" : price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+          return `
+            <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 shadow-md hover:border-slate-700 transition flex flex-col justify-between h-32">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold tracking-wider text-slate-500 uppercase">${asset.id}</span>
+                <span class="text-[11px] px-2 py-0.5 rounded border font-medium ${badgeClass}">
+                  ${sign}${pct.toFixed(2)}%
+                </span>
+              </div>
+              <div class="mt-1">
+                <h3 class="text-sm font-medium text-slate-300">${asset.name}</h3>
+                <div class="flex items-baseline justify-between mt-1">
+                  <span class="text-2xl font-bold text-white tracking-tight">${displayPrice}</span>
+                  <span class="text-xs font-semibold ${textClass}">${sign}${change.toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        document.getElementById('last-updated').innerText = `Refreshed: ${new Date().toLocaleTimeString()}`;
+      } catch (error) {
+        console.error("Data error:", error);
+        document.getElementById('last-updated').innerText = "Data query throttled, retrying...";
+      }
+    }
+
+    // Initialize layout stack and cycle updates every 20 seconds
+    fetchMarketData();
+    setInterval(fetchMarketData, 20000);
+  </script>
 </body>
 </html>
