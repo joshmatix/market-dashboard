@@ -43,7 +43,7 @@
             <tr><th>Ticker</th><th>Asset Name</th><th>Live Value</th><th style="text-align: right;">Net Change</th></tr>
           </thead>
           <tbody id="table-body">
-            <!-- Table row metrics populate dynamically here -->
+            <!-- Data streams here -->
           </tbody>
         </table>
       </div>
@@ -60,7 +60,7 @@
   <script>
     const ASSET_LIST = ["GC=F", "HG=F", "BTC-USD", "SI=F", "^TNX", "^TYX", "TIP", "RINF"];
     
-    // PASTE YOUR RAW RENDER URL IN THE QUOTES BELOW (Do not include /api/market-data here)
+    // PASTE YOUR RAW RENDER URL HERE (e.g. "https://onrender.com")
     let BACKEND_URL = "YOUR_RENDER_URL_HERE"; 
     
     let selectedTicker = "GC=F";
@@ -88,12 +88,12 @@
       }
     }
 
-    // Cleaned syntax to ensure the script interpreter never halts or crashes
+    // Fully repaired fallback structure ensuring zero syntax parsing issues
     function useLocalDataFallback() {
       globalMarketData = {
         "GC=F": { name: "Gold Futures", price: 2514.80, pct: 0.45, history: [2510, 2512, 2511, 2515, 2513, 2514, 2516, 2514.80] },
         "HG=F": { name: "Copper Futures", price: 4.21, pct: -1.12, history: [4.25, 4.24, 4.23, 4.22, 4.20, 4.21] },
-        "BTC-USD": { name: "Bitcoin Spot", price: 79738.00, pct: 2.40, history: [79500, 79600, 79738] },
+        "BTC-USD": { name: "Bitcoin Spot", price: 79738.00, pct: 2.40, history: [79000, 79500, 79200, 79738] },
         "SI=F": { name: "Silver Futures", price: 28.85, pct: 0.85, history: [28.5, 28.7, 28.6, 28.9, 28.85] },
         "^TNX": { name: "10-Year Yield", price: 4.76, pct: -0.32, history: [4.80, 4.78, 4.77, 4.75, 4.76] },
         "^TYX": { name: "30-Year Yield", price: 5.24, pct: 0.15, history: [5.20, 5.22, 5.21, 5.23, 5.24] },
