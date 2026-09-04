@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Live Macro & Financial Market Dashboard</title>
+  <title>Live Macro Market Stream & Charting Panel</title>
   
-  <!-- Embedded pure CSS: Immune to browser script/ad-blockers -->
   <style>
     body {
       background-color: #020617;
@@ -15,7 +14,7 @@
       margin: 0;
     }
     .container {
-      max-w: 1100px;
+      max-w: 1400px;
       margin: 0 auto;
     }
     header {
@@ -24,11 +23,11 @@
       align-items: center;
       border-b: 1px solid #1e293b;
       padding-bottom: 20px;
-      margin-bottom: 30px;
+      margin-bottom: 24px;
     }
     h1 {
       margin: 0;
-      font-size: 28px;
+      font-size: 26px;
       font-weight: 800;
     }
     .status-badge {
@@ -40,12 +39,23 @@
       color: #94a3b8;
     }
     
-    /* Strict Tabular/Table Formatting */
+    /* Workspace Grid splits Layout: Left Table, Right Chart Window */
+    .workspace {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+    @media (min-width: 1024px) {
+      .workspace {
+        grid-template-columns: 1.2fr 1fr;
+      }
+    }
+
+    /* Table Component Styling */
     table {
       width: 100%;
       border-collapse: separate;
-      border-spacing: 0 8px; /* Spaces rows out nicely */
-      margin-top: 10px;
+      border-spacing: 0 8px;
     }
     th {
       text-align: left;
@@ -56,73 +66,161 @@
       color: #64748b;
       font-weight: 700;
     }
+    tr.macro-row {
+      cursor: pointer;
+    }
     td {
       padding: 16px;
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 500;
-      background-color: #0f172a; /* Default base row color */
-      transition: all 0.3s ease;
+      background-color: #0f172a;
+      transition: all 0.2s ease;
     }
     td:first-child {
       border-top-left-radius: 10px;
       border-bottom-left-radius: 10px;
       font-weight: 700;
-      color: #94a3b8;
       font-family: monospace;
     }
     td:last-child {
       border-top-right-radius: 10px;
       border-bottom-right-radius: 10px;
     }
-
-    /* Vibrant Row Highlight Variations */
-    .row-positive td {
-      background-color: rgba(6, 78, 59, 0.25); /* Deep emerald tint */
-      border-top: 1px solid rgba(16, 185, 129, 0.3);
-      border-bottom: 1px solid rgba(16, 185, 129, 0.3);
+    tr.macro-row:hover td {
+      filter: brightness(1.3);
     }
-    .row-positive .ticker-text { color: #34d399 !important; }
+    tr.active-selection td {
+      box-shadow: inset 0 0 0 2px #38bdf8;
+    }
+
+    /* Vibrant Row Highlight Tints */
+    .row-positive td { background-color: rgba(6, 78, 59, 0.25); border-top: 1px solid rgba(16, 185, 129, 0.2); border-bottom: 1px solid rgba(16, 185, 129, 0.2); }
+    .row-positive .ticker-text { color: #34d399; }
     .row-positive .market-price { color: #10b981; font-weight: 800; }
     .row-positive .market-change { color: #34d399; font-weight: 700; }
 
-    .row-negative td {
-      background-color: rgba(153, 27, 27, 0.2); /* Deep crimson tint */
-      border-top: 1px solid rgba(239, 68, 68, 0.3);
-      border-bottom: 1px solid rgba(239, 68, 68, 0.3);
-    }
-    .row-negative .ticker-text { color: #f87171 !important; }
+    .row-negative td { background-color: rgba(153, 27, 27, 0.2); border-top: 1px solid rgba(239, 68, 68, 0.2); border-bottom: 1px solid rgba(239, 68, 68, 0.2); }
+    .row-negative .ticker-text { color: #f87171; }
     .row-negative .market-price { color: #ef4444; font-weight: 800; }
     .row-negative .market-change { color: #f87171; font-weight: 700; }
+
+    /* Interactive Chart Panel Components */
+    .chart-panel {
+      background-color: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      flex-col: column;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 520px;
+      box-sizing: border-box;
+    }
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+    .chart-title-box h2 { margin: 0; font-size: 22px; font-weight: 800; color: #fff; }
+    .chart-title-box div { font-size: 12px; color: #64748b; margin-top: 2px; font-weight: bold; }
+    
+    .timeline-bar {
+      display: flex;
+      gap: 6px;
+      background-color: #020617;
+      padding: 4px;
+      border-radius: 8px;
+      border: 1px solid #1e293b;
+    }
+    .time-btn {
+      background: none;
+      border: none;
+      color: #64748b;
+      padding: 6px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .time-btn:hover { color: #f8fafc; }
+    .time-btn.active { background-color: #1e293b; color: #38bdf8; }
+
+    .canvas-container {
+      position: relative;
+      flex-grow: 1;
+      width: 100%;
+      background-color: #020617;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <!-- Header -->
+    <!-- Main App Header -->
     <header>
       <div>
-        <h1>Macro Market Stream</h1>
-        <div style="color: #64748b; font-size: 13px; margin-top: 4px;">Tabular cross-asset monitoring array</div>
+        <h1>Macro Market Workspace</h1>
+        <div style="color: #64748b; font-size: 13px; margin-top: 4px;">Click an asset row below to generate active line trends</div>
       </div>
       <div class="status-badge">
-        Live Feed Status: <span id="last-updated" style="font-family: monospace; color: #f1f5f9;">Syncing...</span>
+        Network Relay Link: <span id="last-updated" style="font-family: monospace; color: #f1f5f9;">Syncing...</span>
       </div>
     </header>
 
-    <!-- Financial Table Display -->
-    <table>
-      <thead>
-        <tr>
-          <th style="width: 15%;">Ticker</th>
-          <th style="width: 35%;">Asset Name</th>
-          <th style="width: 25%;">Live Value</th>
-          <th style="width: 25%; text-align: right;">Net / % Change</th>
-        </tr>
-      </thead>
-      <tbody id="table-body">
-        <!-- JavaScript injects rows cleanly here -->
-      </tbody>
-    </table>
+    <!-- Workspace Window Matrix Split -->
+    <div class="workspace">
+      
+      <!-- Left side: Live Interactive Table -->
+      <div>
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 20%;">Ticker</th>
+              <th style="width: 35%;">Asset Name</th>
+              <th style="width: 25%;">Live Value</th>
+              <th style="width: 20%; text-align: right;">Net / %</th>
+            </tr>
+          </thead>
+          <tbody id="table-body">
+            <!-- Table content populated dynamically -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Right side: Dynamic Trend Render Station -->
+      <div class="chart-panel">
+        <div class="chart-header">
+          <div class="chart-title-box">
+            <h2 id="panel-asset-name">Select Asset</h2>
+            <div id="panel-asset-ticker">TICKER BASELINE</div>
+          </div>
+          <div class="timeline-bar">
+            <button class="time-btn active" onclick="changeTimeline('1D', this)">1D</button>
+            <button class="time-btn" onclick="changeTimeline('5D', this)">5D</button>
+            <button class="time-btn" onclick="changeTimeline('1M', this)">1M</button>
+            <button class="time-btn" onclick="changeTimeline('1Y', this)">1Y</button>
+          </div>
+        </div>
+        
+        <!-- Live HTML Canvas Chart Node -->
+        <div class="canvas-container">
+          <canvas id="marketCanvas"></canvas>
+        </div>
+      </div>
+
+    </div>
   </div>
 
   <script>
@@ -137,7 +235,21 @@
       { id: "RINF", name: "Inflation Proxy", basePrice: 32.18, unit: "nav" }
     ];
 
-    async function streamTable() {
+    let selectedTicker = "GC=F";
+    let selectedTimeframe = "1D";
+    let runtimeCache = {};
+
+    // Initialize asset metrics maps
+    ASSETS.forEach(a => {
+      runtimeCache[a.id] = {
+        currentPrice: a.basePrice,
+        tickMove: 0,
+        pctChange: 0,
+        historical: Array.from({length: 40}, () => a.basePrice * (1 + (Math.random() - 0.5) * 0.02))
+      };
+    });
+
+    async function updateMarketFeeds() {
       const tbody = document.getElementById('table-body');
       let liveBtc = null;
 
@@ -147,44 +259,56 @@
           const cryptoJson = await res.json();
           liveBtc = cryptoJson.bitcoin?.usd;
         }
-      } catch (e) {
-        console.warn("Primary API node structural fallback bypass active.");
-      }
+      } catch (e) { console.warn("Fallback path engaged."); }
 
       tbody.innerHTML = ASSETS.map(asset => {
-        const tickMove = (Math.random() - 0.5) * (asset.basePrice * 0.001);
-        let currentPrice = asset.basePrice + tickMove;
+        const cache = runtimeCache[asset.id];
+        
+        // Simulating data updates dynamically
+        cache.tickMove = (Math.random() - 0.5) * (asset.basePrice * 0.001);
+        cache.currentPrice = asset.basePrice + cache.tickMove;
         
         if (asset.id === "BTC-USD" && liveBtc) {
-          currentPrice = liveBtc;
+          cache.currentPrice = liveBtc;
+          cache.tickMove = (liveBtc - asset.basePrice);
         }
 
-        const pctChange = ((tickMove / asset.basePrice) * 100) + (Math.random() * 0.6 - 0.2);
-        const isUp = pctChange >= 0;
+        cache.pctChange = ((cache.tickMove / asset.basePrice) * 100) + (Math.random() * 0.4 - 0.2);
+        
+        // Append last value to pricing history loop
+        cache.historical.push(cache.currentPrice);
+        if (cache.historical.length > 50) cache.historical.shift();
+
+        const isUp = cache.pctChange >= 0;
         const rowClass = isUp ? 'row-positive' : 'row-negative';
+        const activeClass = asset.id === selectedTicker ? 'active-selection' : '';
         const plusSign = isUp ? '+' : '';
 
         const printValue = asset.unit === "%" 
-          ? currentPrice.toFixed(3) + "%" 
-          : currentPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+          ? cache.currentPrice.toFixed(3) + "%" 
+          : cache.currentPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
 
         return `
-          <tr class="${rowClass}">
+          <tr class="macro-row ${rowClass} ${activeClass}" onclick="selectAsset('${asset.id}')">
             <td class="ticker-text">${asset.id}</td>
             <td style="color: #e2e8f0;">${asset.name}</td>
             <td class="market-price">${printValue}</td>
             <td class="market-change" style="text-align: right;">
-              ${plusSign}${tickMove.toFixed(2)} (${plusSign}${pctChange.toFixed(2)}%)
+              ${plusSign}${cache.pctChange.toFixed(2)}%
             </td>
           </tr>
         `;
       }).join('');
 
       document.getElementById('last-updated').innerText = new Date().toLocaleTimeString();
+      renderActiveChart();
     }
 
-    streamTable();
-    setInterval(streamTable, 5000);
-  </script>
-</body>
-</html>
+    function selectAsset(ticker) {
+      selectedTicker = ticker;
+      const targetAsset = ASSETS.find(a => a.id === ticker);
+      document.getElementById('panel-asset-name').innerText = targetAsset.name;
+      document.getElementById('panel-asset-ticker').innerText = targetAsset.id;
+      updateMarketFeeds();
+    }
+
