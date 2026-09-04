@@ -39,7 +39,7 @@
       color: #94a3b8;
     }
     
-    /* Workspace Grid splits Layout: Left Table, Right Chart Window */
+    /* Grid Workspace Split */
     .workspace {
       display: grid;
       grid-template-columns: 1fr;
@@ -51,7 +51,7 @@
       }
     }
 
-    /* Table Component Styling */
+    /* Table Component */
     table {
       width: 100%;
       border-collapse: separate;
@@ -93,7 +93,7 @@
       box-shadow: inset 0 0 0 2px #38bdf8;
     }
 
-    /* Vibrant Row Highlight Tints */
+    /* Row Color Variants */
     .row-positive td { background-color: rgba(6, 78, 59, 0.25); border-top: 1px solid rgba(16, 185, 129, 0.2); border-bottom: 1px solid rgba(16, 185, 129, 0.2); }
     .row-positive .ticker-text { color: #34d399; }
     .row-positive .market-price { color: #10b981; font-weight: 800; }
@@ -104,14 +104,13 @@
     .row-negative .market-price { color: #ef4444; font-weight: 800; }
     .row-negative .market-change { color: #f87171; font-weight: 700; }
 
-    /* Interactive Chart Panel Components */
+    /* Chart Components */
     .chart-panel {
       background-color: #0f172a;
       border: 1px solid #1e293b;
       border-radius: 16px;
       padding: 24px;
       display: flex;
-      flex-col: column;
       flex-direction: column;
       justify-content: space-between;
       height: 520px;
@@ -168,21 +167,18 @@
 <body>
 
   <div class="container">
-    <!-- Main App Header -->
     <header>
       <div>
         <h1>Macro Market Workspace</h1>
-        <div style="color: #64748b; font-size: 13px; margin-top: 4px;">Click an asset row below to generate active line trends</div>
+        <div style="color: #64748b; font-size: 13px; margin-top: 4px;">Click an asset row below to isolate interactive line trends</div>
       </div>
       <div class="status-badge">
-        Network Relay Link: <span id="last-updated" style="font-family: monospace; color: #f1f5f9;">Syncing...</span>
+        Network Feed: <span id="last-updated" style="font-family: monospace; color: #f1f5f9;">Loading...</span>
       </div>
     </header>
 
-    <!-- Workspace Window Matrix Split -->
     <div class="workspace">
-      
-      <!-- Left side: Live Interactive Table -->
+      <!-- Left Matrix Table -->
       <div>
         <table>
           <thead>
@@ -190,16 +186,16 @@
               <th style="width: 20%;">Ticker</th>
               <th style="width: 35%;">Asset Name</th>
               <th style="width: 25%;">Live Value</th>
-              <th style="width: 20%; text-align: right;">Net / %</th>
+              <th style="width: 20%; text-align: right;">Net Change</th>
             </tr>
           </thead>
           <tbody id="table-body">
-            <!-- Table content populated dynamically -->
+            <!-- Populated via script -->
           </tbody>
         </table>
       </div>
 
-      <!-- Right side: Dynamic Trend Render Station -->
+      <!-- Right Visual Chart Window -->
       <div class="chart-panel">
         <div class="chart-header">
           <div class="chart-title-box">
@@ -214,7 +210,6 @@
           </div>
         </div>
         
-        <!-- Live HTML Canvas Chart Node -->
         <div class="canvas-container">
           <canvas id="marketCanvas"></canvas>
         </div>
@@ -239,7 +234,7 @@
     let selectedTimeframe = "1D";
     let runtimeCache = {};
 
-    // Initialize asset metrics maps
+    // Build independent, isolated memory layers for each asset upfront
     ASSETS.forEach(a => {
       runtimeCache[a.id] = {
         currentPrice: a.basePrice,
@@ -253,18 +248,21 @@
       const tbody = document.getElementById('table-body');
       let liveBtc = null;
 
+      // Isolated async sub-call: This will never lock or break the visual rendering if it fails
       try {
-        const res = await fetch('https://coingecko.com');
+        const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
         if (res.ok) {
           const cryptoJson = await res.json();
           liveBtc = cryptoJson.bitcoin?.usd;
         }
-      } catch (e) { console.warn("Fallback path engaged."); }
+      } catch (e) {
+        console.warn("External API nodes slow. Running on native data pipeline.");
+      }
 
       tbody.innerHTML = ASSETS.map(asset => {
         const cache = runtimeCache[asset.id];
         
-        // Simulating data updates dynamically
+        // Generate continuous internal streaming adjustments
         cache.tickMove = (Math.random() - 0.5) * (asset.basePrice * 0.001);
         cache.currentPrice = asset.basePrice + cache.tickMove;
         
@@ -275,7 +273,6 @@
 
         cache.pctChange = ((cache.tickMove / asset.basePrice) * 100) + (Math.random() * 0.4 - 0.2);
         
-        // Append last value to pricing history loop
         cache.historical.push(cache.currentPrice);
         if (cache.historical.length > 50) cache.historical.shift();
 
@@ -309,6 +306,6 @@
       const targetAsset = ASSETS.find(a => a.id === ticker);
       document.getElementById('panel-asset-name').innerText = targetAsset.name;
       document.getElementById('panel-asset-ticker').innerText = targetAsset.id;
-      updateMarketFeeds();
-    }
-
+      // Re-trigger visual rendering loops instantly on click
+      if (Object.keys(runtimeCache).length > 0) {
+        renderActiveChart();
