@@ -4,48 +4,128 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Live Macro & Financial Market Dashboard</title>
-  <script src="https://tailwindcss.com"></script>
-</head>
-<body class="bg-slate-950 text-slate-100 min-h-screen p-6 font-sans antialiased">
+  
+  <!-- Embedded pure CSS: Immune to browser script/ad-blockers -->
+  <style>
+    body {
+      background-color: #020617;
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      padding: 24px;
+      margin: 0;
+    }
+    .container {
+      max-w: 1100px;
+      margin: 0 auto;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-b: 1px solid #1e293b;
+      padding-bottom: 20px;
+      margin-bottom: 30px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 800;
+    }
+    .status-badge {
+      background-color: #0f172a;
+      border: 1px solid #334155;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    
+    /* Strict Tabular/Table Formatting */
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 8px; /* Spaces rows out nicely */
+      margin-top: 10px;
+    }
+    th {
+      text-align: left;
+      padding: 12px 16px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #64748b;
+      font-weight: 700;
+    }
+    td {
+      padding: 16px;
+      font-size: 15px;
+      font-weight: 500;
+      background-color: #0f172a; /* Default base row color */
+      transition: all 0.3s ease;
+    }
+    td:first-child {
+      border-top-left-radius: 10px;
+      border-bottom-left-radius: 10px;
+      font-weight: 700;
+      color: #94a3b8;
+      font-family: monospace;
+    }
+    td:last-child {
+      border-top-right-radius: 10px;
+      border-bottom-right-radius: 10px;
+    }
 
-  <div class="max-w-7xl mx-auto">
-    <!-- Header Design -->
-    <header class="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-slate-900 gap-4">
+    /* Vibrant Row Highlight Variations */
+    .row-positive td {
+      background-color: rgba(6, 78, 59, 0.25); /* Deep emerald tint */
+      border-top: 1px solid rgba(16, 185, 129, 0.3);
+      border-bottom: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .row-positive .ticker-text { color: #34d399 !important; }
+    .row-positive .market-price { color: #10b981; font-weight: 800; }
+    .row-positive .market-change { color: #34d399; font-weight: 700; }
+
+    .row-negative td {
+      background-color: rgba(153, 27, 27, 0.2); /* Deep crimson tint */
+      border-top: 1px solid rgba(239, 68, 68, 0.3);
+      border-bottom: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    .row-negative .ticker-text { color: #f87171 !important; }
+    .row-negative .market-price { color: #ef4444; font-weight: 800; }
+    .row-negative .market-change { color: #f87171; font-weight: 700; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Header -->
+    <header>
       <div>
-        <div class="flex items-center gap-3">
-          <span class="text-2xl">📊</span>
-          <h1 class="text-3xl font-extrabold tracking-tight text-white bg-clip-text bg-gradient-to-r from-white to-slate-400">Macro Market Stream</h1>
-        </div>
-        <p class="text-sm text-slate-500 mt-1 font-medium">Real-time cross-asset monitoring array</p>
+        <h1>Macro Market Stream</h1>
+        <div style="color: #64748b; font-size: 13px; margin-top: 4px;">Tabular cross-asset monitoring array</div>
       </div>
-      
-      <!-- Status Badge Component -->
-      <div class="flex items-center gap-4 bg-slate-900/40 border border-slate-800/80 px-4 py-2 rounded-xl backdrop-blur-sm self-start md:self-auto">
-        <div class="flex items-center gap-2">
-          <span class="relative flex h-2 w-2">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-          </span>
-          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Live Feed</span>
-        </div>
-        <div class="h-4 w-px bg-slate-800"></div>
-        <span id="last-updated" class="text-xs font-mono text-slate-400">Syncing...</span>
+      <div class="status-badge">
+        Live Feed Status: <span id="last-updated" style="font-family: monospace; color: #f1f5f9;">Syncing...</span>
       </div>
     </header>
 
-    <!-- Visual Category Section Title -->
-    <div class="mt-8 mb-4">
-      <h2 class="text-xs font-bold tracking-widest text-slate-500 uppercase">Core Asset Grid Matrix</h2>
-    </div>
-
-    <!-- Multi-Column Responsive Grid Workspace -->
-    <div id="dashboard-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-      <!-- JavaScript will mount the styled cards here dynamically -->
-    </div>
+    <!-- Financial Table Display -->
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 15%;">Ticker</th>
+          <th style="width: 35%;">Asset Name</th>
+          <th style="width: 25%;">Live Value</th>
+          <th style="width: 25%; text-align: right;">Net / % Change</th>
+        </tr>
+      </thead>
+      <tbody id="table-body">
+        <!-- JavaScript injects rows cleanly here -->
+      </tbody>
+    </table>
   </div>
 
   <script>
-    // System baseline parameters
     const ASSETS = [
       { id: "GC=F", name: "Gold Futures", basePrice: 2514.80, unit: "oz" },
       { id: "HG=F", name: "Copper Futures", basePrice: 4.21, unit: "lb" },
@@ -57,8 +137,8 @@
       { id: "RINF", name: "Inflation Proxy", basePrice: 32.18, unit: "nav" }
     ];
 
-    async function streamMetrics() {
-      const grid = document.getElementById('dashboard-grid');
+    async function streamTable() {
+      const tbody = document.getElementById('table-body');
       let liveBtc = null;
 
       try {
@@ -68,11 +148,10 @@
           liveBtc = cryptoJson.bitcoin?.usd;
         }
       } catch (e) {
-        console.warn("Primary Node offline, routing to baseline.");
+        console.warn("Primary API node structural fallback bypass active.");
       }
 
-      grid.innerHTML = ASSETS.map(asset => {
-        // Run ticker price calculations
+      tbody.innerHTML = ASSETS.map(asset => {
         const tickMove = (Math.random() - 0.5) * (asset.basePrice * 0.001);
         let currentPrice = asset.basePrice + tickMove;
         
@@ -82,45 +161,30 @@
 
         const pctChange = ((tickMove / asset.basePrice) * 100) + (Math.random() * 0.6 - 0.2);
         const isUp = pctChange >= 0;
+        const rowClass = isUp ? 'row-positive' : 'row-negative';
         const plusSign = isUp ? '+' : '';
 
-        // Dynamic Tailwind theme classes mapped to performance signs
-        const cardBg = isUp ? 'bg-emerald-950/20 border-emerald-900/50 hover:border-emerald-700/60' : 'bg-rose-950/20 border-rose-900/50 hover:border-rose-700/60';
-        const badgeStyle = isUp ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20';
-        const textStyle = isUp ? 'text-emerald-400' : 'text-rose-400';
-        const subtextStyle = isUp ? 'text-emerald-500/70' : 'text-rose-500/70';
-
-        // Format asset output constraints
         const printValue = asset.unit === "%" 
           ? currentPrice.toFixed(3) + "%" 
           : currentPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
 
         return `
-          <div class="p-6 rounded-2xl border backdrop-blur-md shadow-lg shadow-black/40 transition-all duration-300 transform hover:-translate-y-1 flex flex-col justify-between h-36 ${cardBg}">
-            <div class="flex items-center justify-between">
-              <span class="text-[11px] font-extrabold tracking-widest text-slate-400 uppercase font-mono">${asset.id}</span>
-              <span class="text-xs px-2.5 py-0.5 rounded-full border font-bold font-mono tracking-tight ${badgeStyle}">
-                ${plusSign}${pctChange.toFixed(2)}%
-              </span>
-            </div>
-            
-            <div class="mt-2">
-              <h3 class="text-sm font-medium text-slate-300 tracking-wide">${asset.name}</h3>
-              <div class="flex items-baseline justify-between mt-1.5">
-                <span class="text-2xl font-black tracking-tight ${textStyle}">${printValue}</span>
-                <span class="text-xs font-bold font-mono ${subtextStyle}">${plusSign}${tickMove.toFixed(2)}</span>
-              </div>
-            </div>
-          </div>
+          <tr class="${rowClass}">
+            <td class="ticker-text">${asset.id}</td>
+            <td style="color: #e2e8f0;">${asset.name}</td>
+            <td class="market-price">${printValue}</td>
+            <td class="market-change" style="text-align: right;">
+              ${plusSign}${tickMove.toFixed(2)} (${plusSign}${pctChange.toFixed(2)}%)
+            </td>
+          </tr>
         `;
       }).join('');
 
       document.getElementById('last-updated').innerText = new Date().toLocaleTimeString();
     }
 
-    // Initialize stream loops immediately
-    streamMetrics();
-    setInterval(streamMetrics, 6000);
+    streamTable();
+    setInterval(streamTable, 5000);
   </script>
 </body>
 </html>
