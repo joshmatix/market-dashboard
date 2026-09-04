@@ -151,6 +151,7 @@
       position: relative;
       flex-grow: 1;
       width: 100%;
+      height: 360px; /* Explicit height backup */
       background-color: #020617;
       border: 1px solid #1e293b;
       border-radius: 12px;
@@ -199,8 +200,8 @@
       <div class="chart-panel">
         <div class="chart-header">
           <div class="chart-title-box">
-            <h2 id="panel-asset-name">Select Asset</h2>
-            <div id="panel-asset-ticker">TICKER BASELINE</div>
+            <h2 id="panel-asset-name">Gold Futures</h2>
+            <div id="panel-asset-ticker">GC=F</div>
           </div>
           <div class="timeline-bar">
             <button class="time-btn active" onclick="changeTimeline('1D', this)">1D</button>
@@ -234,7 +235,7 @@
     let selectedTimeframe = "1D";
     let runtimeCache = {};
 
-    // Build independent, isolated memory layers for each asset upfront
+    // Build independent runtime blocks
     ASSETS.forEach(a => {
       runtimeCache[a.id] = {
         currentPrice: a.basePrice,
@@ -246,23 +247,22 @@
 
     async function updateMarketFeeds() {
       const tbody = document.getElementById('table-body');
+      if (!tbody) return;
       let liveBtc = null;
 
-      // Isolated async sub-call: This will never lock or break the visual rendering if it fails
       try {
-        const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
+        const res = await fetch('https://coingecko.com');
         if (res.ok) {
           const cryptoJson = await res.json();
           liveBtc = cryptoJson.bitcoin?.usd;
         }
       } catch (e) {
-        console.warn("External API nodes slow. Running on native data pipeline.");
+        console.warn("Using baseline configuration data streams.");
       }
 
       tbody.innerHTML = ASSETS.map(asset => {
         const cache = runtimeCache[asset.id];
         
-        // Generate continuous internal streaming adjustments
         cache.tickMove = (Math.random() - 0.5) * (asset.basePrice * 0.001);
         cache.currentPrice = asset.basePrice + cache.tickMove;
         
@@ -304,8 +304,14 @@
     function selectAsset(ticker) {
       selectedTicker = ticker;
       const targetAsset = ASSETS.find(a => a.id === ticker);
-      document.getElementById('panel-asset-name').innerText = targetAsset.name;
-      document.getElementById('panel-asset-ticker').innerText = targetAsset.id;
-      // Re-trigger visual rendering loops instantly on click
-      if (Object.keys(runtimeCache).length > 0) {
-        renderActiveChart();
+      if(targetAsset) {
+        document.getElementById('panel-asset-name').innerText = targetAsset.name;
+        document.getElementById('panel-asset-ticker').innerText = targetAsset.id;
+      }
+      
+      const rows = document.querySelectorAll('.macro-row');
+      rows.forEach((row, idx) => {
+        if (ASSETS[idx] && ASSETS[idx].id === ticker) row.classList.add('active-selection');
+        else row.classList.remove('active-selection');
+      });
+      
